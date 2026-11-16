@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="tool">
+  <meta name="design-style" content="canopy">
+  <title>Survival to Settlement: Paleolithic Era vs. Neolithic Agricultural Revolution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* Page and surfaces (earth strata -- Canopy) */
+      --background: #faf6ef;
+      --surface-container-low: #f0eae0;
+      --surface-container: #e8e0d2;
+      --surface-container-high: #ddd3c2;
+
+      /* Ink */
+      --on-surface: #2a302b;
+      --on-surface-variant: #4a524b;
+
+      /* Lines */
+      --outline: #737872;
+      --outline-variant: #cbc5b8;
+
+      /* Accents */
+      --primary: #366948;
+      --on-primary: #ffffff;
+      --primary-container: #d8efe0;
+      --on-primary-container: #1f4d30;
+      --secondary: #5c635c;
+      --tertiary: #8f5822;
+      --tertiary-container: #f2d4a7;
+      --on-tertiary-container: #6e3f0c;
+      --error: #b83230;
+      --on-error: #ffffff;
+      --error-container: #f8dedd;
+      --on-error-container: #7c1f1e;
+
+      /* Data series */
+      --data-1: #366948;
+      --data-2: #8f5822;
+      --data-3: #a85438;
+      --data-4: #4b6b78;
+      --data-context: #b5b0a3;
+
+      /* Additional SVG scene strata tokens */
+      --sky-paleolithic: #dfe7e6;
+      --sky-neolithic: #f2e4c9;
+      --water-river: #4b6b78;
+      --water-light: #89aab6;
+      --stone-cave: #9d9689;
+      --stone-dark: #6b655b;
+      --mud-brick: #c58f63;
+      --mud-brick-dark: #9c673e;
+      --crop-gold: #d6a449;
+      --foliage-deep: #2b5439;
+      --skin-tone: #c78b63;
+      --tunic-paleo: #7c563a;
+      --tunic-neo: #366948;
+
+      /* Fonts */
+      --font-headline: 'Literata', serif;
+      --font-body: 'Nunito Sans', sans-serif;
+      --font-label: 'Geist Mono', monospace;
+
+      /* Shape */
+      --rounded: 0.625rem;
+      --rounded-lg: 1rem;
+      --rounded-full: 9999px;
+
+      /* Effects */
+      --shadow-soft: 0 4px 20px rgb(42 48 43 / 0.06);
+      --shadow-soft-hover: 0 8px 28px rgb(42 48 43 / 0.09);
+      --border-soft: 1px solid rgb(203 197 184 / 0.65);
+      --focus-glow: 0 0 0 4px rgb(54 105 72 / 0.18);
+
+      /* Shared semantic & focus tokens */
+      --positive: #2d6a42;
+      --warning: #9a5b13;
+      --focus: #366948;
+
+      /* Type scale -- Focused Tool */
+      --display-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.35rem);
+      --headline-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.55rem);
+      --subhead-size: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale (4pt base) */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.5rem;
+      --space-2xl: 4rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 220ms;
+      --dur-long: 420ms;
+    }
+
+    /* Base reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.62;
+      -webkit-font-smoothing: antialiased;
+    }
+    header { position: static !important; }
+
+    .page-grid {
+      display: grid;
+      gap: var(--space-lg);
+      padding: var(--space-lg);
+      max-width: 1200px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .page-grid * { min-width: 0; }
+
+    /* Focus rings */
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+      box-shadow: var(--focus-glow);
+    }
+
+    /* Typography */
+    h1, h2, h3 {
+      font-family: var(--font-headline);
+      color: var(--on-surface);
+      margin: 0;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: var(--display-size);
+      line-height: 1.12;
+      letter-spacing: -0.01em;
+    }
+    h2 {
+      font-size: var(--headline-size);
+      line-height: 1.2;
+    }
+    h3 {
+      font-size: var(--subhead-size);
+      line-height: 1.25;
+    }
+    p {
+      margin: 0;
+      max-width: 68ch;
+    }
+
+    .kicker {
+      font-family: var(--font-body);
+      font-size: var(--label-size);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--tertiary);
+    }
+
+    .mono-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--secondary);
+    }
+
+    /* Header */
+    .site-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: var(--border-soft);
+    }
+    .header-title-block {
+      display: grid;
+      gap: var(--space-xs);
+      max-width: 46rem;
+    }
+    .header-subtitle {
+      color: var(--on-surface-variant);
+      font-size: var(--subhead-size);
+    }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      min-height: 44px;
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--rounded);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      font-weight: 700;
+      border: 0;
+      cursor: pointer;
+      transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    .btn:disabled {
+      opacity: 0.52;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--on-primary);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--on-primary-container);
+      box-shadow: var(--shadow-soft);
+    }
+    .btn-secondary {
+      background-color: var(--surface-container);
+      color: var(--on-surface);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--surface-container-high);
+    }
+    .btn-ochre {
+      background-color: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+    }
+    .btn-ochre:hover:not(:disabled) {
+      background-color: var(--tertiary);
+      color: var(--on-primary);
+    }
+
+    /* Almanac Phenology / Time-Travel Cycle Strip (Canopy defining treatment #2) */
+    .season-strip {
+      background-color: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+    .season-strip-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .season-cells {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .season-cell {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      min-width: 34px;
+      min-height: 44px;
+      padding: 0 var(--space-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--rounded);
+      background-color: var(--surface-container-high);
+      color: var(--secondary);
+      border: 0;
+      cursor: pointer;
+      transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+    }
+    .season-cell:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    .season-cell:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .season-cell.is-prep {
+      background-color: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+      font-weight: 700;
+    }
+    .season-cell.is-peak {
+      background-color: var(--primary);
+      color: var(--on-primary);
+      font-weight: 700;
+    }
+    .season-cell.is-current {
+      box-shadow: 0 0 0 2px var(--on-surface);
+    }
+
+    /* Cards (Canopy earth strata) */
+    .card {
+      background-color: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-lg);
+      border: 0;
+    }
+    .card-interactive {
+      box-shadow: var(--shadow-soft);
+      transition: box-shadow var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out);
+    }
+    .card-interactive:hover {
+      box-shadow: var(--shadow-soft-hover);
+    }
+    .card.is-leaf-highlight {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+    .card.is-leaf-highlight h2,
+    .card.is-leaf-highlight h3,
+    .card.is-leaf-highlight .mono-label {
+      color: var(--on-primary-container);
+    }
+
+    /* Main Simulation Workspace (Asymmetric 2-col layout) */
+    .sim-workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .sim-main-col {
+      display: grid;
+      gap: var(--space-lg);
+    }
+    .sim-side-col {
+      display: grid;
+      gap: var(--space-lg);
+    }
+
+    /* Live Diorama Stage */
+    .diorama-wrap {
+      background-color: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+      display: grid;
+      gap: var(--space-sm);
+    }
+    .diorama-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .era-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--rounded-full);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .era-pill-paleo {
+      background-color: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+    }
+    .era-pill-neo {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+    .diorama-svg-frame {
+      width: 100%;
+      border-radius: var(--rounded);
+      overflow: hidden;
+      background-color: var(--surface-container);
+      min-height: 210px;
+    }
+    .diorama-svg-frame svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .diorama-caption {
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+
+    /* Decision Stage */
+    .scenario-header {
+      display: grid;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-md);
+    }
+    .scenario-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .choices-list {
+      display: grid;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    .choice-btn {
+      width: 100%;
+      text-align: left;
+      background-color: var(--background);
+      color: var(--on-surface);
+      border: var(--border-soft);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      min-height: 44px;
+      cursor: pointer;
+      display: grid;
+      gap: var(--space-xs);
+      font-family: var(--font-body);
+      transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+    }
+    .choice-btn:hover:not(:disabled) {
+      background-color: var(--surface-container);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-soft);
+    }
+    .choice-btn.is-selected {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .choice-btn.is-selected-paleo {
+      background-color: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+      box-shadow: 0 0 0 2px var(--tertiary);
+    }
+    .choice-title {
+      font-weight: 700;
+      font-size: var(--body-size);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+    .choice-tag {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      padding: 2px var(--space-sm);
+      border-radius: var(--rounded-full);
+      background-color: var(--surface-container-high);
+      color: var(--on-surface-variant);
+      flex-shrink: 0;
+    }
+    .choice-desc {
+      font-size: 0.9rem;
+      color: var(--on-surface-variant);
+    }
+
+    /* Dynamic Feedback Panel */
+    .feedback-panel {
+      margin-top: var(--space-md);
+      padding: var(--space-md);
+      border-radius: var(--rounded);
+      background-color: var(--surface-container);
+      display: grid;
+      gap: var(--space-sm);
+      animation: fadeDrift var(--dur-long) var(--ease-out);
+    }
+    .feedback-panel.is-positive {
+      background-color: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+    .feedback-panel.is-caution {
+      background-color: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+    }
+    .feedback-effects {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+    .effect-chip {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      padding: 2px var(--space-sm);
+      border-radius: var(--rounded-full);
+      background-color: var(--background);
+      color: var(--on-surface);
+    }
+    .scenario-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: var(--border-soft);
+    }
+
+    /* Meters & Status Dashboard */
+    .meters-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+    }
+    .meter-tile {
+      background-color: var(--background);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      display: grid;
+      gap: var(--space-xs);
+    }
+    .meter-value {
+      font-family: var(--font-headline);
+      font-size: 1.5rem;
+      font-weight: 600;
+      font-variant-numeric: lining-nums tabular-nums;
+      line-height: 1.15;
+    }
+    .meter-bar-track {
+      height: 8px;
+      border-radius: var(--rounded-full);
+      background-color: var(--surface-container-high);
+      overflow: hidden;
+    }
+    .meter-bar-fill {
+      height: 100%;
+      border-radius: var(--rounded-full);
+      background-color: var(--primary);
+      transition: width var(--dur-long) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+    }
+    .meter-bar-fill.is-ochre {
+      background-color: var(--tertiary);
+    }
+    .meter-bar-fill.is-clay {
+      background-color: var(--data-3);
+    }
+
+    .badge-rack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-top: var(--space-xs);
+    }
+    .unlock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 4px var(--space-sm);
+      border-radius: var(--rounded);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      background-color: var(--surface-container-high);
+      color: var(--secondary);
+    }
+    .unlock-badge.is-active {
+      background-color: var(--primary);
+      color: var(--on-primary);
+    }
+    .unlock-badge.is-active-ochre {
+      background-color: var(--tertiary);
+      color: var(--on-primary);
+    }
+
+    /* Chronicle Log */
+    .log-list {
+      display: grid;
+      gap: var(--space-xs);
+      max-height: 220px;
+      overflow-y: auto;
+      margin-top: var(--space-sm);
+      padding-right: var(--space-xs);
+    }
+    .log-entry {
+      background-color: var(--background);
+      border-radius: var(--rounded);
+      padding: var(--space-sm);
+      font-size: 0.875rem;
+      display: grid;
+      gap: 2px;
+    }
+
+    /* Section Separator */
+    .section-block {
+      display: grid;
+      gap: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: var(--border-soft);
+    }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-md);
+    }
+
+    /* Comparison Graphics & Matrix */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .chart-box {
+      position: relative;
+      min-height: 290px;
+      width: 100%;
+    }
+    .matrix-table-wrap {
+      overflow-x: auto;
+      background-color: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+    }
+    table.compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .compare-table th {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--secondary);
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 2px solid var(--outline-variant);
+    }
+    .compare-table td {
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: var(--border-soft);
+      vertical-align: top;
+      font-size: 0.9375rem;
+    }
+    .compare-table tr:last-child td {
+      border-bottom: 0;
+    }
+    .compare-table tr.is-highlighted {
+      background-color: var(--background);
+    }
+
+    /* Adapting vs Modifying Quiz + WriteAbout Reflection */
+    .reflection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .classifier-list {
+      display: grid;
+      gap: var(--space-sm);
+    }
+    .classifier-item {
+      background-color: var(--background);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      display: grid;
+      gap: var(--space-sm);
+    }
+    .classifier-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    .toggle-pill {
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--border-soft);
+      background-color: var(--surface-container-low);
+      color: var(--on-surface);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color var(--dur-short) var(--ease-out);
+    }
+    .toggle-pill:hover {
+      background-color: var(--surface-container-high);
+    }
+    .toggle-pill.is-correct {
+      background-color: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+    .toggle-pill.is-wrong {
+      background-color: var(--error);
+      color: var(--on-error);
+      border-color: var(--error);
+    }
+    .classifier-feedback {
+      font-size: 0.875rem;
+      color: var(--on-surface-variant);
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--rounded);
+      background-color: var(--surface-container-low);
+    }
+
+    /* WriteAbout Vocabulary & Textarea */
+    .vocab-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-sm);
+    }
+    .vocab-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px var(--space-sm);
+      border-radius: var(--rounded-full);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      background-color: var(--surface-container-high);
+      color: var(--on-surface-variant);
+      transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+    }
+    .vocab-chip.is-used {
+      background-color: var(--primary);
+      color: var(--on-primary);
+    }
+    .field-label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: var(--space-xs);
+      color: var(--on-surface);
+    }
+    .reflection-textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--border-soft);
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.6;
+      resize: vertical;
+    }
+    .reflection-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+    }
+    .scaffold-box {
+      background-color: var(--tertiary-container);
+      color: var(--on-tertiary-container);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      font-size: 0.9rem;
+      margin-bottom: var(--space-sm);
+    }
+
+    /* Footer source note */
+    .sources-footer {
+      padding-top: var(--space-md);
+      border-top: var(--border-soft);
+      color: var(--on-surface-variant);
+      font-size: 0.875rem;
+      display: grid;
+      gap: var(--space-xs);
+    }
+
+    /* Animations */
+    @keyframes fadeDrift {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 920px) {
+      .sim-workspace,
+      .compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-grid {
+        padding: var(--space-md);
+        gap: var(--space-md);
+      }
+      .meters-grid {
+        grid-template-columns: 1fr;
+      }
+      .season-strip {
+        padding: var(--space-md);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-grid">
+    <!-- Header -->
+    <header class="site-header">
+      <div class="header-title-block">
+        <span class="kicker">Grade 6 Social Studies · Interactive Time-Travel Simulation</span>
+        <h1>Survival to Settlement: Paleolithic Era vs. Neolithic Agricultural Revolution</h1>
+        <p class="header-subtitle">Lead an extended-family band through the Old Stone Age, then cross the 12,000-year turning point into the Fertile Crescent to see how farming transformed human life from adapting to modifying the Earth.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-secondary" id="jump-compare-btn" onclick="scrollToSection('comparison-section')">
+          <i data-lucide="bar-chart-2" aria-hidden="true"></i>
+          <span>Compare Eras</span>
+        </button>
+        <button type="button" class="btn btn-secondary" id="reset-sim-btn" onclick="handleResetSimulation(this)">
+          <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+          <span>Reset Simulation</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Almanac Journey Rhythm Strip -->
+    <section class="season-strip" aria-label="Simulation timeline progress">
+      <div class="season-strip-meta">
+        <span class="mono-label" id="timeline-era-label">Part 1: Paleolithic Nomadic Life</span>
+        <span class="era-pill era-pill-paleo" id="timeline-mode-pill">Mode: Adapting</span>
+      </div>
+      <div class="season-cells" id="timeline-cells" role="group" aria-label="Simulation stages"></div>
+    </section>
+
+    <!-- Primary Simulation Workspace -->
+    <section class="sim-workspace" aria-label="Interactive time-travel simulation">
+      <!-- Left Column: Live Diorama + Active Decision -->
+      <div class="sim-main-col">
+        <!-- Live SVG Era Diorama -->
+        <div class="diorama-wrap card-interactive">
+          <div class="diorama-header">
+            <span class="mono-label" id="diorama-location">Wild Steppe &amp; Limestone Cave · 7–500 sq. mi. Range</span>
+            <span class="era-pill era-pill-paleo" id="diorama-era-badge">Paleolithic Era</span>
+          </div>
+          <div class="diorama-svg-frame" id="diorama-container" aria-live="polite"></div>
+          <div class="diorama-caption">
+            <span id="diorama-caption-text">A small nomadic band follows migrating herds and forages wild plants across a wide territory.</span>
+            <span class="mono-label" id="diorama-step-counter">Stage 1 of 9</span>
+          </div>
+        </div>
+
+        <!-- Decision Card -->
+        <article class="card card-interactive" id="scenario-card">
+          <div class="scenario-header">
+            <div class="scenario-meta-row">
+              <span class="kicker" id="scenario-kicker">Part 1 · Survival Decision 1</span>
+              <span class="mono-label" id="scenario-timeframe">Before 10,000 BCE</span>
+            </div>
+            <h2 id="scenario-title">Loading scenario…</h2>
+            <p id="scenario-prompt"></p>
+          </div>
+
+          <div class="choices-list" id="choices-container" role="group" aria-label="Decision choices"></div>
+
+          <div class="feedback-panel" id="feedback-panel" hidden>
+            <strong id="feedback-headline"></strong>
+            <p id="feedback-body"></p>
+            <div class="feedback-effects" id="feedback-effects"></div>
+          </div>
+
+          <div class="scenario-nav">
+            <button type="button" class="btn btn-secondary" id="prev-step-btn" onclick="goToPreviousStep()">
+              <i data-lucide="arrow-left" aria-hidden="true"></i>
+              <span>Previous Stage</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="next-step-btn" onclick="goToNextStep()" disabled>
+              <span id="next-step-label">Make a Choice to Continue</span>
+              <i data-lucide="arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- Right Column: Survival/Settlement Meters + Unlocks + Field Log -->
+      <aside class="sim-side-col" aria-label="Band and village status meters">
+        <section class="card is-leaf-highlight" id="status-card">
+          <div class="diorama-header">
+            <span class="mono-label" id="status-card-label">Band Survival Meters</span>
+            <span class="mono-label" id="score-readout">Score: 0 pts</span>
+          </div>
+          <h3 id="status-card-heading">Nomadic Extended-Family Band</h3>
+
+          <div class="meters-grid">
+            <div class="meter-tile">
+              <span class="mono-label" id="meter-food-label">Food Security</span>
+              <span class="meter-value" id="meter-food-val">45%</span>
+              <div class="meter-bar-track" aria-hidden="true">
+                <div class="meter-bar-fill is-ochre" id="meter-food-bar" style="width: 45%;"></div>
+              </div>
+            </div>
+            <div class="meter-tile">
+              <span class="mono-label">Group Size</span>
+              <span class="meter-value" id="meter-pop-val">38 people</span>
+              <div class="meter-bar-track" aria-hidden="true">
+                <div class="meter-bar-fill" id="meter-pop-bar" style="width: 15%;"></div>
+              </div>
+            </div>
+            <div class="meter-tile">
+              <span class="mono-label" id="meter-range-label">Territory Needed</span>
+              <span class="meter-value" id="meter-range-val">250 sq mi</span>
+              <div class="meter-bar-track" aria-hidden="true">
+                <div class="meter-bar-fill is-clay" id="meter-range-bar" style="width: 50%;"></div>
+              </div>
+            </div>
+            <div class="meter-tile">
+              <span class="mono-label" id="meter-surplus-label">Surplus &amp; Tech</span>
+              <span class="meter-value" id="meter-surplus-val">0%</span>
+              <div class="meter-bar-track" aria-hidden="true">
+                <div class="meter-bar-fill" id="meter-surplus-bar" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <span class="kicker">Tools, Domestication &amp; Village Jobs</span>
+          <h3>Unlocked Achievements</h3>
+          <div class="badge-rack" id="unlocks-rack"></div>
+        </section>
+
+        <section class="card">
+          <div class="diorama-header">
+            <span class="kicker">Expedition Field Log</span>
+            <span class="mono-label" id="log-count-label">0 entries</span>
+          </div>
+          <div class="log-list" id="field-log-list" aria-live="polite"></div>
+        </section>
+      </aside>
+    </section>
+
+    <!-- Section 2: Comparison Graphics & Matrix -->
+    <section class="section-block" id="comparison-section" aria-label="Paleolithic vs. Neolithic comparison graphics">
+      <div class="section-head">
+        <div>
+          <span class="kicker">Visual Evidence · Data Comparison</span>
+          <h2>How Farming Changed Community Size, Territory &amp; Food Supply</h2>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="toggleMatrixFocus()">
+          <i data-lucide="layers" aria-hidden="true"></i>
+          <span id="matrix-toggle-label">Highlight Key Changes</span>
+        </button>
+      </div>
+
+      <div class="compare-grid">
+        <div class="card card-interactive">
+          <span class="mono-label">Simulation &amp; Historical Metrics</span>
+          <h3>Nomadic Band vs. Farming Village</h3>
+          <p style="margin-top: var(--space-xs); margin-bottom: var(--space-md); color: var(--on-surface-variant); font-size: 0.9rem;">
+            Notice the trade-off: Paleolithic bands needed <strong>7–500 square miles</strong> to feed fewer than 100 people, while Neolithic villages thrived on compact river-valley farms and grew rapidly.
+          </p>
+          <div class="chart-box">
+            <canvas id="eraComparisonChart" aria-label="Bar chart comparing Paleolithic and Neolithic metrics"></canvas>
+          </div>
+        </div>
+
+        <div class="matrix-table-wrap card-interactive">
+          <span class="mono-label">Unit 2 Comparative Matrix</span>
+          <h3 style="margin-bottom: var(--space-sm);">Paleolithic Era vs. Neolithic Era</h3>
+          <table class="compare-table" id="comparative-matrix">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Paleolithic (Old Stone Age)</th>
+                <th>Neolithic (New Stone Age)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-matrix-row="food">
+                <td><strong>Food Source</strong></td>
+                <td>Hunted wild game, fished, and foraged wild berries, nuts, and honey (unpredictable supply).</td>
+                <td>Domesticated wheat, barley, peas, figs, goats, sheep, cattle, and pigs; created a food <strong>surplus</strong>.</td>
+              </tr>
+              <tr data-matrix-row="settlement">
+                <td><strong>Settlement</strong></td>
+                <td><strong>Nomadic</strong> extended-family bands (&lt;100 people) moving across 7–500 sq. mi.; used caves &amp; camps.</td>
+                <td>Permanent mud-brick <strong>settlements</strong> near Fertile Crescent rivers; villages grew into towns.</td>
+              </tr>
+              <tr data-matrix-row="environment">
+                <td><strong>Human-Environment Interaction</strong></td>
+                <td><strong>ADAPTING</strong> to nature: wearing animal skins and sheltering in natural limestone caves.</td>
+                <td><strong>MODIFYING</strong> nature: clearing land and digging <strong>irrigation</strong> canals to water crops.</td>
+              </tr>
+              <tr data-matrix-row="jobs">
+                <td><strong>Tools &amp; Jobs</strong></td>
+                <td>Chipped stone hand axes, spears, bone needles, bows; everyone searched for food.</td>
+                <td>Polished stone plows, sickles, pottery; job <strong>specialization</strong> (potters, weavers, toolmakers).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Adapting vs. Modifying Check & WriteAbout Reflection -->
+    <section class="section-block" id="reflection-section" aria-label="Formative check and reflection">
+      <div class="section-head">
+        <div>
+          <span class="kicker">Formative Check &amp; Reflection</span>
+          <h2>Did Humans Adapt or Modify? Explain the Turning Point</h2>
+        </div>
+        <span class="mono-label" id="classifier-score-pill">0 / 4 Classified</span>
+      </div>
+
+      <div class="reflection-grid">
+        <!-- Adapting vs Modifying Quick Classifier -->
+        <div class="card">
+          <span class="mono-label">Part A · Human-Environment Interaction</span>
+          <h3>Adapting vs. Modifying Check</h3>
+          <p style="margin-top: var(--space-xs); margin-bottom: var(--space-md); color: var(--on-surface-variant); font-size: 0.9rem;">
+            Choose <strong>Adapting</strong> if humans changed their own habits without altering the land, or <strong>Modifying</strong> if humans physically changed the Earth or water.
+          </p>
+          <div class="classifier-list" id="classifier-list"></div>
+        </div>
+
+        <!-- WriteAbout CER Reflection with Vocabulary Auto-Checker -->
+        <div class="card">
+          <div class="diorama-header">
+            <span class="mono-label">Part B · WriteAbout Reflection</span>
+            <button type="button" class="btn btn-ochre" style="min-height: 36px; padding: 4px 12px; font-size: 0.85rem;" onclick="toggleScaffoldHelp()">
+              <i data-lucide="sparkles" aria-hidden="true"></i>
+              <span id="scaffold-btn-text">Show Sentence Starters</span>
+            </button>
+          </div>
+          <h3>Explain How Life &amp; Environment Interaction Changed</h3>
+          <p style="margin-top: var(--space-xs); margin-bottom: var(--space-sm); color: var(--on-surface-variant); font-size: 0.9rem;">
+            Use key Unit 2 vocabulary words in your summary below. Words light up green automatically as you include them!
+          </p>
+
+          <div class="vocab-bank" id="vocab-bank" aria-label="Key vocabulary checklist"></div>
+
+          <div class="scaffold-box" id="scaffold-box" hidden>
+            <strong>Sentence Starters (CER Frame):</strong><br>
+            <em>Claim:</em> The Agricultural Revolution changed human life from a nomadic hunter-gatherer lifestyle to permanent settlements.<br>
+            <em>Evidence:</em> In the Paleolithic Era, humans adapted by… In contrast, during the Neolithic Era, villagers modified the land by…<br>
+            <em>Reasoning:</em> Because of domestication and a food surplus, villages could support specialized jobs like…
+          </div>
+
+          <label for="reflection-input" class="field-label">Your Reflection: How did human-environment interaction shift from adapting to modifying?</label>
+          <textarea id="reflection-input" class="reflection-textarea" oninput="handleReflectionInput(this.value)" placeholder="Write 2–4 sentences explaining how Paleolithic bands adapted to nature and how Neolithic villagers modified the environment…"></textarea>
+
+          <div class="reflection-footer">
+            <span class="mono-label" id="reflection-status">0 of 6 vocabulary terms used</span>
+            <button type="button" class="btn btn-primary" onclick="downloadStudySummary()">
+              <i data-lucide="download" aria-hidden="true"></i>
+              <span>Download Summary (.txt)</span>
+            </button>
+          </div>
+          <p id="download-status-msg" class="mono-label" style="margin-top: var(--space-xs);" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="sources-footer">
+      <span class="mono-label">Curriculum &amp; Historical Grounding</span>
+      <p>Grounded in the Harford County Public Schools Grade 6 Social Studies Framework (Unit 2: The Neolithic Revolution), Tier 1 &amp; Tier 2 Paleolithic vs. Neolithic Geographic Worksheets, <em>The Farming Revolution</em>, <em>Hunter-Gatherer Culture</em>, <em>Geo Basics Manual</em>, and formative reflection routines (WriteAbout &amp; 3-2-1 Closure) from <em>25 Quick Formative Assessments for a Differentiated Classroom</em> by Judith Dodge.</p>
+    </footer>
+  </main>
+
+  <api-shim></api-shim>
+
+  <script>
+    const SCENARIOS = [
+      {
+        id: 'p1_hunt',
+        era: 'paleolithic',
+        eraLabel: 'Part 1: Paleolithic Nomadic Life',
+        kicker: 'Part 1 · Decision 1 of 4 · Tracking Wild Game',
+        timeframe: 'Before 10,000 BCE',
+        location: 'Open Grassland & River Gorge · 7–500 sq. mi. Range',
+        title: 'Tracking the Migrating Gazelle Herd',
+        prompt: 'Your extended-family band of 38 people needs protein. Scouts spotted gazelle tracks three miles north, but predators are also nearby. How should your band get food today?',
+        choices: [
+          {
+            id: 'ambush',
+            title: 'Coordinate a Small-Band Hunt with Bows & Stone-Tipped Spears',
+            tag: 'Teamwork & Tools',
+            desc: 'Use tracking skills, teamwork, and chipped stone spears with bows to hunt the herd safely.',
+            positive: true,
+            feedbackHead: 'Successful Hunt!',
+            feedbackBody: 'Just like skilled foraging bands such as the Hadza, teamwork, careful tracking, and stone-tipped spears/bows brought back plenty of meat. Still, wild herds keep moving, so food remains unpredictable next week.',
+            effects: ['Food Security +20%', 'Tool Mastery: Spear & Bow'],
+            deltas: { food: 20, pop: 2, range: 20, surplus: 5 },
+            unlock: 'Stone & Bow Hunting'
+          },
+          {
+            id: 'scavenge',
+            title: 'Wait and Scavenge Remains Left by Predators',
+            tag: 'Low Risk, Low Yield',
+            desc: 'Stay back until lions finish eating, then use sharp stone flakes to cut leftover meat and bone marrow.',
+            positive: false,
+            feedbackHead: 'Barely Enough to Share',
+            feedbackBody: 'Early human ancestors scavenged remains left by predators, which is safer than confronting big game, but it provides only small scraps for 38 hungry band members.',
+            effects: ['Food Security +5%', 'Band stays cautious'],
+            deltas: { food: 5, pop: 0, range: 10, surplus: 0 },
+            unlock: 'Chipped Stone Flakes'
+          },
+          {
+            id: 'stay_camp',
+            title: 'Stay at Camp and Wait for Animals to Come to You',
+            tag: 'Risky',
+            desc: 'Avoid walking far in hopes a herd wanders near your rocky overhang.',
+            positive: false,
+            feedbackHead: 'Food Supplies Drop!',
+            feedbackBody: 'Hunter-gatherers rely on mobility as a survival strategy. Staying still when game moves leaves the band hungry and forces a tough march later.',
+            effects: ['Food Security -15%', 'Energy drains'],
+            deltas: { food: -15, pop: -2, range: 0, surplus: 0 },
+            unlock: null
+          }
+        ]
+      },
+      {
+        id: 'p1_forage',
+        era: 'paleolithic',
+        eraLabel: 'Part 1: Paleolithic Nomadic Life',
+        kicker: 'Part 1 · Decision 2 of 4 · Foraging Wild Plants & Honey',
+        timeframe: 'Before 10,000 BCE',
+        location: 'Woodland Edge & Wild Meadows',
+        title: 'Foraging Berries, Nuts, Roots & Wild Honey',
+        prompt: 'While hunters track game, gatherers explore the hillside for wild vegetation and nutrients like honey. What foraging plan keeps your band healthy without depleting one spot?',
+        choices: [
+          {
+            id: 'diverse_forage',
+            title: 'Spread Out to Gather Wild Berries, Nuts, Roots & Tree Honey',
+            tag: 'Balanced Foraging',
+            desc: 'Use digging sticks and woven baskets to harvest a mix of plants and sweet wild honey, leaving roots to regrow.',
+            positive: true,
+            feedbackHead: 'Rich Wild Harvest!',
+            feedbackBody: 'Foraging wild plants and honey supplied most daily calories for Paleolithic bands. Spreading out across the landscape prevented using up every plant at once.',
+            effects: ['Food Security +18%', 'Band Size +3'],
+            deltas: { food: 18, pop: 3, range: 30, surplus: 5 },
+            unlock: 'Wild Foraging & Honey'
+          },
+          {
+            id: 'strip_one_grove',
+            title: 'Pick Every Single Berry and Nut in One Small Grove',
+            tag: 'Short-Term Gain',
+            desc: 'Save walking energy today by clearing out one dense patch completely.',
+            positive: false,
+            feedbackHead: 'Patch Exhausted Quickly',
+            feedbackBody: 'You got food today, but stripping one small area means the band must relocate sooner across its 7–500 square mile territory to find untouched wild plants.',
+            effects: ['Food Security +6%', 'Territory Needed +60 sq mi'],
+            deltas: { food: 6, pop: 0, range: 60, surplus: 0 },
+            unlock: null
+          }
+        ]
+      },
+      {
+        id: 'p1_migrate',
+        era: 'paleolithic',
+        eraLabel: 'Part 1: Paleolithic Nomadic Life',
+        kicker: 'Part 1 · Decision 3 of 4 · Seasonal Migration',
+        timeframe: 'Autumn Shift · Before 10,000 BCE',
+        location: 'Migration Trail · 7–500 sq. mi. Territory',
+        title: 'Winter Winds & Moving Across 7–500 Square Miles',
+        prompt: 'Frost arrives early! The wild herds are migrating toward warmer coastal lowlands, and nuts are gone. Remember: your band has ~40 people and no farms. What do you do?',
+        choices: [
+          {
+            id: 'migrate_coast',
+            title: 'Follow the Herds on a Seasonal Migration to Warmer Coastal Lowlands',
+            tag: 'ADAPTING to Nature',
+            desc: 'Pack light bone tools and animal skins, and travel across your large territory to match the season.',
+            positive: true,
+            feedbackHead: 'Smart Adaptation!',
+            feedbackBody: 'Hunter-gatherer bands needed 7 to 500 square miles of land and stayed under ~100 people so they could stay mobile. Moving to warmer coastal areas without changing the land is a classic example of ADAPTING.',
+            effects: ['Food Security +15%', 'Territory: 320 sq mi', 'Mode: ADAPTING'],
+            deltas: { food: 15, pop: 2, range: 70, surplus: 0 },
+            unlock: 'Nomadic Migration'
+          },
+          {
+            id: 'try_permanent_camp',
+            title: 'Refuse to Move and Build Heavy Log Cabins Here',
+            tag: 'Unsustainable',
+            desc: 'Stay put in the cold highlands even though the wild herds and edible plants are gone.',
+            positive: false,
+            feedbackHead: 'Hard Winter Without Farming',
+            feedbackBody: 'Without domesticated crops or stored grain surpluses, staying in one place all winter makes survival very difficult for a nomadic band.',
+            effects: ['Food Security -18%', 'Band Size -4'],
+            deltas: { food: -18, pop: -4, range: -20, surplus: 0 },
+            unlock: null
+          }
+        ]
+      },
+      {
+        id: 'p1_shelter',
+        era: 'paleolithic',
+        eraLabel: 'Part 1: Paleolithic Nomadic Life',
+        kicker: 'Part 1 · Decision 4 of 4 · Shelter & Stone/Bone Tools',
+        timeframe: 'Late Paleolithic · ~13,000 BCE',
+        location: 'Natural Limestone Cave & Flint Ridge',
+        title: 'Freezing Storm: Cave Shelter & Tool Crafting',
+        prompt: 'A fierce ice storm hits! You spot a natural limestone cave high on a cliff. How should your band survive the cold and prepare tools for spring?',
+        choices: [
+          {
+            id: 'cave_and_skins',
+            title: 'Shelter Inside the Natural Cave, Stitch Animal Skins & Craft Bone Needles',
+            tag: 'ADAPTING to Nature',
+            desc: 'Use the cave exactly as nature formed it, build a small hearth, and shape chipped stone hand axes and bone needles.',
+            positive: true,
+            feedbackHead: 'Ready for the Turning Point!',
+            feedbackBody: 'By using a natural cave without altering the rock structure and wearing animal skins, your band ADAPTED to the environment. Soon, the Ice Age will end—changing Earth forever!',
+            effects: ['Food Security +10%', 'Tools: Bone & Stone Axes'],
+            deltas: { food: 10, pop: 2, range: 0, surplus: 5 },
+            unlock: 'Cave Shelter & Bone Tools'
+          },
+          {
+            id: 'open_lean_to',
+            title: 'Sleep Under Thin Branches in the Open Valley',
+            tag: 'Exposed',
+            desc: 'Skip the climb up to the limestone cave to save time.',
+            positive: false,
+            feedbackHead: 'Freezing Night!',
+            feedbackBody: 'Without sturdy shelter or stitched animal-skin clothing, the storm drains your band’s strength. Natural caves were vital Paleolithic shelters.',
+            effects: ['Food Security -10%', 'Band Size -2'],
+            deltas: { food: -10, pop: -2, range: 0, surplus: 0 },
+            unlock: null
+          }
+        ]
+      },
+      {
+        id: 'n1_domesticate',
+        era: 'neolithic',
+        eraLabel: 'Part 2: Neolithic Village Life (Fertile Crescent)',
+        kicker: 'Part 2 · Decision 1 of 5 · The Agricultural Revolution (~12,000 Years Ago)',
+        timeframe: '~10,000 BCE · Fertile Crescent',
+        location: 'Fertile Crescent River Valley (Modern Iraq / Syria / Egypt)',
+        title: 'End of the Ice Age: Domesticating Plants & Animals',
+        prompt: '12,000 years ago, Earth warmed after the last Ice Age. Wild wheat, barley, figs, and wild sheep thrive in the Fertile Crescent. Will your band start farming and taming animals?',
+        choices: [
+          {
+            id: 'domesticate_both',
+            title: 'Plant Wild Wheat, Barley & Figs AND Tame Goats, Sheep & Cattle',
+            tag: 'Domestication',
+            desc: 'Save the best seeds each harvest, grind grain on stones, and raise tame livestock for meat and milk.',
+            positive: true,
+            feedbackHead: 'Welcome to the Neolithic Era!',
+            feedbackBody: 'Domesticating both crops (wheat, barley, peas, figs) and livestock (goats, sheep, cattle, pigs) gave communities a steady food supply—launching the Agricultural Revolution!',
+            effects: ['Food Surplus +30%', 'Population +35', 'Territory Shrinks to 12 sq mi'],
+            deltas: { food: 25, pop: 35, range: -260, surplus: 30 },
+            unlock: 'Plant & Animal Domestication'
+          },
+          {
+            id: 'crops_only',
+            title: 'Plant Only Barley Seeds, Ignore Wild Goats and Sheep',
+            tag: 'Partial Shift',
+            desc: 'Grow grain near the river, but keep chasing wild animals for meat.',
+            positive: false,
+            feedbackHead: 'Still Partly Dependent on Hunting',
+            feedbackBody: 'Growing barley helps stabilize calories, but domesticating goats, sheep, and cattle is what gives villages reliable protein, wool, and dairy.',
+            effects: ['Food Surplus +15%', 'Population +18'],
+            deltas: { food: 12, pop: 18, range: -180, surplus: 15 },
+            unlock: 'Early Crop Farming'
+          }
+        ]
+      },
+      {
+        id: 'n2_irrigate',
+        era: 'neolithic',
+        eraLabel: 'Part 2: Neolithic Village Life (Fertile Crescent)',
+        kicker: 'Part 2 · Decision 2 of 5 · Modifying the Land',
+        timeframe: '~9,000 BCE · Fertile Crescent',
+        location: 'Riverbank Farmland & Dry Uplands',
+        title: 'Dry Season Threatens Crops: Digging Irrigation Canals',
+        prompt: 'Summer sun bakes your wheat and barley fields dry while the river sits 200 yards away. How do Neolithic farmers respond to this environmental challenge?',
+        choices: [
+          {
+            id: 'dig_canals',
+            title: 'Dig Irrigation Canals & Clear Brush to Water Flat Farm Fields',
+            tag: 'MODIFYING the Earth',
+            desc: 'Use stone hoes and teamwork to cut ditches from the river straight to your crops.',
+            positive: true,
+            feedbackHead: 'Humans Modify the Environment!',
+            feedbackBody: 'By digging irrigation canals and clearing land for farming, villagers physically altered Earth’s surface and water flow—shifting from Paleolithic ADAPTING to Neolithic MODIFYING.',
+            effects: ['Food Surplus +25%', 'Crop Reliability High', 'Mode: MODIFYING'],
+            deltas: { food: 15, pop: 30, range: -20, surplus: 25 },
+            unlock: 'Irrigation Canals'
+          },
+          {
+            id: 'pray_rain',
+            title: 'Leave the River Alone and Wait for Natural Rain',
+            tag: 'No Modification',
+            desc: 'Keep the riverbank untouched and hope rain clouds return soon.',
+            positive: false,
+            feedbackHead: 'Crops Wilt in the Heat',
+            feedbackBody: 'Without irrigation ditches, dry seasons ruin harvests and force people to forage again. Modifying water flow made permanent farming reliable.',
+            effects: ['Food Surplus -10%', 'Slow Growth'],
+            deltas: { food: -10, pop: 5, range: 0, surplus: -10 },
+            unlock: null
+          }
+        ]
+      },
+      {
+        id: 'n3_mudbrick',
+        era: 'neolithic',
+        eraLabel: 'Part 2: Neolithic Village Life (Fertile Crescent)',
+        kicker: 'Part 2 · Decision 3 of 5 · Permanent Settlements',
+        timeframe: '~8,000 BCE · River Valley Village',
+        location: 'Permanent Village Settlement',
+        title: 'Building Permanent Mud-Brick Homes',
+        prompt: 'With steady harvests nearby, your people no longer need to move every season. What kind of settlement should you build near the river valley?',
+        choices: [
+          {
+            id: 'mudbrick_homes',
+            title: 'Build Sturdy Sun-Dried Mud-Brick Homes & Shared Grain Courts',
+            tag: 'Permanent Settlement',
+            desc: 'Shape river clay and straw into bricks for lasting walls, roofs, and central work courtyards.',
+            positive: true,
+            feedbackHead: 'A Permanent Village Emerges!',
+            feedbackBody: 'Mud-brick homes lasted for generations! Settling in one place allowed families to accumulate tools, pottery, and community traditions—growing far beyond a 100-person nomadic band.',
+            effects: ['Population +55', 'Territory: 5 sq mi', 'Permanent Homes Built'],
+            deltas: { food: 10, pop: 55, range: -25, surplus: 15 },
+            unlock: 'Mud-Brick Settlements'
+          },
+          {
+            id: 'tent_camps',
+            title: 'Keep Using Lightweight Hide Tents',
+            tag: 'Temporary',
+            desc: 'Live in temporary branch-and-skin shelters next to the wheat fields.',
+            positive: false,
+            feedbackHead: 'Grain & Homes Vulnerable to Floods',
+            feedbackBody: 'Lightweight tents worked great for nomadic hunters, but permanent farming communities needed sturdy mud-brick walls to protect families and stored food.',
+            effects: ['Population +15', 'Low Protection'],
+            deltas: { food: 0, pop: 15, range: -10, surplus: 5 },
+            unlock: null
+          }
+        ]
+      },
+      {
+        id: 'n4_surplus',
+        era: 'neolithic',
+        eraLabel: 'Part 2: Neolithic Village Life (Fertile Crescent)',
+        kicker: 'Part 2 · Decision 4 of 5 · Food Surplus & Population Growth',
+        timeframe: '~7,000 BCE · Thriving Village',
+        location: 'Village Granaries & Storage Kilns',
+        title: 'Managing a Bumper Harvest: Storing Food Surplus',
+        prompt: 'Your irrigated wheat and barley fields produced way more food than the village can eat this month! How will you handle this extra supply—a food surplus?',
+        choices: [
+          {
+            id: 'clay_granaries',
+            title: 'Fire Clay Storage Pots & Build Sealed Village Granaries',
+            tag: 'Surplus Security',
+            desc: 'Store extra grain safely away from mice and dampness so the village has food year-round.',
+            positive: true,
+            feedbackHead: 'Food Surplus Fuels Population Growth!',
+            feedbackBody: 'Storing a food surplus meant people no longer spent every day hunting or foraging. Populations boomed—helping world population grow from ~5 million 10,000 years ago toward millions more in farming civilizations.',
+            effects: ['Food Surplus +25%', 'Population +80', 'Famine Risk Dropped'],
+            deltas: { food: 20, pop: 80, range: 0, surplus: 25 },
+            unlock: 'Stored Food Surplus'
+          },
+          {
+            id: 'eat_fast',
+            title: 'Host One Giant Feast and Leave Extra Grain Uncovered',
+            tag: 'Wasteful',
+            desc: 'Skip building storage pits and eat as much as possible right now.',
+            positive: false,
+            feedbackHead: 'Surplus Spoils Before Winter!',
+            feedbackBody: 'Uncovered grain spoils or gets eaten by pests. Without long-term surplus storage, villagers still face hunger before the next harvest.',
+            effects: ['Food Surplus +5%', 'Population +15'],
+            deltas: { food: 0, pop: 15, range: 0, surplus: 5 },
+            unlock: null
+          }
+        ]
+      },
+      {
+        id: 'n5_jobs',
+        era: 'neolithic',
+        eraLabel: 'Part 2: Neolithic Village Life (Fertile Crescent)',
+        kicker: 'Part 2 · Decision 5 of 5 · Job Specialization',
+        timeframe: '~6,000 BCE · Complex Village',
+        location: 'Pottery Kilns, Looms & Stone Workshops',
+        title: 'Unlocking Specialized Village Jobs',
+        prompt: 'Thanks to your stored food surplus, not everyone has to farm! How should your 200+ villagers organize work to help the settlement thrive?',
+        choices: [
+          {
+            id: 'specialize_all',
+            title: 'Train Potters, Weavers & Toolmakers Alongside Farmers',
+            tag: 'Specialization',
+            desc: 'Potters craft storage jars, weavers make warm cloth from sheep wool, and toolmakers polish stone plows and sickles.',
+            positive: true,
+            feedbackHead: 'Specialization Transforms Daily Life!',
+            feedbackBody: 'With specialized jobs—potters, weavers, and toolmakers—technology jumped ahead and early trade began! Compare this to Paleolithic bands where almost everyone spent all day finding food.',
+            effects: ['Jobs Unlocked: Potter, Weaver, Toolmaker', 'Population +60', 'Tech +20%'],
+            deltas: { food: 10, pop: 60, range: 0, surplus: 20 },
+            unlock: 'Potters, Weavers & Toolmakers'
+          },
+          {
+            id: 'everyone_farms',
+            title: 'Make Every Single Person Farm Wheat All Day',
+            tag: 'No Specialization',
+            desc: 'Do not allow anyone to spend time on pottery, weaving, or polished plows.',
+            positive: false,
+            feedbackHead: 'Village Misses Out on New Technology',
+            feedbackBody: 'You still have food, but without specialized toolmakers, potters, and weavers, storage jars, cloth, and polished stone plows remain scarce.',
+            effects: ['Tech Stays Basic', 'Population +20'],
+            deltas: { food: 5, pop: 20, range: 0, surplus: 5 },
+            unlock: null
+          }
+        ]
+      }
+    ];
+
+    const CLASSIFIER_ITEMS = [
+      {
+        id: 'c1',
+        scenario: 'Paleolithic hunters living inside a natural limestone cave during a winter snowstorm.',
+        answer: 'ADAPTING',
+        explain: 'Correct — ADAPTING! They used a natural cave shelter and wore animal skins without physically changing the rock or land.'
+      },
+      {
+        id: 'c2',
+        scenario: 'Neolithic farmers digging river canals to bring water to dry wheat and barley fields.',
+        answer: 'MODIFYING',
+        explain: 'Correct — MODIFYING! Digging irrigation canals physically alters the Earth and redirects river water flow.'
+      },
+      {
+        id: 'c3',
+        scenario: 'Forager bands moving seasonally across 7–500 sq. mi. to warmer coastal valleys in winter.',
+        answer: 'ADAPTING',
+        explain: 'Correct — ADAPTING! The band changed where they lived and moved with the seasons instead of altering the land.'
+      },
+      {
+        id: 'c4',
+        scenario: 'Early villagers clearing away thick forests and burning brush to create flat farmland.',
+        answer: 'MODIFYING',
+        explain: 'Correct — MODIFYING! Clearing trees and flattening land physically transforms the natural environment.'
+      }
+    ];
+
+    const VOCAB_TERMS = [
+      { key: 'nomadic', label: 'Nomadic' },
+      { key: 'domestication', label: 'Domestication', aliases: ['domesticate', 'domesticated', 'domesticating'] },
+      { key: 'surplus', label: 'Surplus' },
+      { key: 'irrigation', label: 'Irrigation', aliases: ['irrigate', 'irrigated', 'canals'] },
+      { key: 'settlement', label: 'Settlement', aliases: ['settlements', 'settle', 'settled'] },
+      { key: 'specialization', label: 'Specialization', aliases: ['specialized', 'specialize', 'potter', 'weaver', 'toolmaker'] }
+    ];
+
+    let appState = {
+      currentStep: 0,
+      choicesMade: {},
+      classifierAnswers: {},
+      reflectionText: '',
+      showScaffold: false,
+      highlightMatrix: false
+    };
+
+    let comparisonChartInstance = null;
+
+    function computeMetrics(upToStep) {
+      let food = 45;
+      let pop = 38;
+      let range = 250;
+      let surplus = 0;
+      let score = 0;
+      const unlocks = [];
+      const logs = [];
+
+      const limit = typeof upToStep === 'number' ? upToStep : SCENARIOS.length - 1;
+      for (let i = 0; i <= limit && i < SCENARIOS.length; i++) {
+        const sc = SCENARIOS[i];
+        const chosenId = appState.choicesMade[sc.id];
+        if (!chosenId) continue;
+        const choice = sc.choices.find(function (c) { return c.id === chosenId; });
+        if (!choice) continue;
+
+        food = Math.max(10, Math.min(100, food + choice.deltas.food));
+        pop = Math.max(15, pop + choice.deltas.pop);
+        range = Math.max(3, Math.min(500, range + choice.deltas.range));
+        surplus = Math.max(0, Math.min(100, surplus + choice.deltas.surplus));
+        score += choice.positive ? 20 : 8;
+        if (choice.unlock && unlocks.indexOf(choice.unlock) === -1) {
+          unlocks.push(choice.unlock);
+        }
+        logs.push({
+          step: i + 1,
+          era: sc.era,
+          title: sc.title,
+          choiceTitle: choice.title,
+          positive: choice.positive
+        });
+      }
+
+      return { food: food, pop: pop, range: range, surplus: surplus, score: score, unlocks: unlocks, logs: logs };
+    }
+
+    function saveProgress() {
+      if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === 'function') {
+        window.notebookAppApi.setAppState(appState).catch(function () {});
+      }
+    }
+
+    function renderTimelineStrip() {
+      const container = document.getElementById('timeline-cells');
+      const eraLabel = document.getElementById('timeline-era-label');
+      const modePill = document.getElementById('timeline-mode-pill');
+      if (!container) return;
+
+      const currentSc = SCENARIOS[appState.currentStep] || SCENARIOS[0];
+      if (eraLabel) eraLabel.textContent = currentSc.eraLabel;
+      if (modePill) {
+        if (currentSc.era === 'paleolithic') {
+          modePill.textContent = 'Mode: Adapting';
+          modePill.className = 'era-pill era-pill-paleo';
+        } else {
+          modePill.textContent = 'Mode: Modifying';
+          modePill.className = 'era-pill era-pill-neo';
+        }
+      }
+
+      container.innerHTML = '';
+      SCENARIOS.forEach(function (sc, idx) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isDone = Boolean(appState.choicesMade[sc.id]);
+        const isCurrent = idx === appState.currentStep;
+        const canVisit = idx <= getHighestUnlockedStep();
+        let cls = 'season-cell';
+        if (isDone) {
+          cls += sc.era === 'paleolithic' ? ' is-prep' : ' is-peak';
+        }
+        if (isCurrent) cls += ' is-current';
+        btn.className = cls;
+        btn.disabled = !canVisit;
+        btn.textContent = (sc.era === 'paleolithic' ? 'P' : 'N') + (idx < 4 ? idx + 1 : idx - 3);
+        btn.title = sc.title;
+        btn.setAttribute('aria-label', 'Stage ' + (idx + 1) + ': ' + sc.title);
+        btn.onclick = function () { jumpToStep(idx); };
+        container.appendChild(btn);
+      });
+    }
+
+    function getHighestUnlockedStep() {
+      let highest = 0;
+      for (let i = 0; i < SCENARIOS.length; i++) {
+        if (appState.choicesMade[SCENARIOS[i].id]) {
+          highest = Math.min(SCENARIOS.length - 1, i + 1);
+        } else {
+          break;
+        }
+      }
+      return highest;
+    }
+
+    function renderDiorama(sc, metrics) {
+      const container = document.getElementById('diorama-container');
+      const locEl = document.getElementById('diorama-location');
+      const eraBadge = document.getElementById('diorama-era-badge');
+      const captionEl = document.getElementById('diorama-caption-text');
+      const stepCounter = document.getElementById('diorama-step-counter');
+      if (!container) return;
+
+      if (locEl) locEl.textContent = sc.location;
+      if (stepCounter) stepCounter.textContent = 'Stage ' + (appState.currentStep + 1) + ' of ' + SCENARIOS.length;
+
+      const isPaleo = sc.era === 'paleolithic';
+      if (eraBadge) {
+        eraBadge.textContent = isPaleo ? 'Paleolithic Era · Adapting' : 'Neolithic Era · Modifying';
+        eraBadge.className = isPaleo ? 'era-pill era-pill-paleo' : 'era-pill era-pill-neo';
+      }
+
+      const hasChoice = Boolean(appState.choicesMade[sc.id]);
+      const hasIrrigation = metrics.unlocks.indexOf('Irrigation Canals') !== -1;
+      const hasMudBrick = metrics.unlocks.indexOf('Mud-Brick Settlements') !== -1;
+      const hasJobs = metrics.unlocks.indexOf('Potters, Weavers & Toolmakers') !== -1;
+      const hasLivestock = metrics.unlocks.indexOf('Plant & Animal Domestication') !== -1;
+
+      if (captionEl) {
+        if (isPaleo) {
+          captionEl.textContent = hasChoice
+            ? 'Band adapts to wild terrain using stone/bone tools, caves, and seasonal movement.'
+            : 'Make a survival decision below to guide your extended-family band.';
+        } else {
+          captionEl.textContent = hasJobs
+            ? 'Thriving Fertile Crescent village with irrigation canals, mud-brick homes, grain surplus, and specialized workers.'
+            : 'Watch the Fertile Crescent settlement evolve as you domesticate, irrigate, build, and specialize!';
+        }
+      }
+
+      if (isPaleo) {
+        container.innerHTML = `
+          <svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Paleolithic nomadic landscape with natural limestone cave, wild game, and migrating band">
+            <rect width="640" height="230" fill="var(--sky-paleolithic)"/>
+            <circle cx="535" cy="48" r="24" fill="var(--tertiary-container)"/>
+            <!-- Distant hills -->
+            <path d="M0 150 Q120 95 250 135 T510 120 L640 135 L640 230 L0 230 Z" fill="var(--surface-container-high)"/>
+            <!-- Ground steppe -->
+            <path d="M0 165 Q210 148 420 162 T640 155 L640 230 L0 230 Z" fill="var(--surface-container)"/>
+            <!-- Limestone cave -->
+            <path d="M25 182 L42 96 Q88 68 152 94 L178 182 Z" fill="var(--stone-cave)"/>
+            <path d="M68 182 Q98 112 135 182 Z" fill="var(--stone-dark)"/>
+            <!-- Campfire in front of cave -->
+            <ellipse cx="145" cy="186" rx="14" ry="5" fill="var(--stone-dark)"/>
+            <path d="M139 184 Q145 164 151 184 Q145 174 139 184 Z" fill="var(--data-3)"/>
+            <!-- Foraging trees & berry bushes -->
+            <rect x="242" y="132" width="10" height="36" rx="3" fill="var(--tunic-paleo)"/>
+            <circle cx="247" cy="122" r="22" fill="var(--foliage-deep)"/>
+            <circle cx="268" cy="158" r="12" fill="var(--primary)"/>
+            <circle cx="265" cy="154" r="2.5" fill="var(--data-3)"/>
+            <circle cx="272" cy="159" r="2.5" fill="var(--data-3)"/>
+            <!-- Small extended-family band (3 figures) -->
+            <circle cx="195" cy="154" r="7" fill="var(--skin-tone)"/>
+            <path d="M187 162 L203 162 L206 186 L184 186 Z" fill="var(--tunic-paleo)"/>
+            <line x1="205" y1="150" x2="216" y2="186" stroke="var(--on-surface)" stroke-width="2.5"/>
+            <circle cx="222" cy="160" r="6" fill="var(--skin-tone)"/>
+            <path d="M216 167 L228 167 L230 186 L214 186 Z" fill="var(--mud-brick-dark)"/>
+            <!-- Wild migrating gazelles -->
+            <g transform="translate(420, 148)">
+              <ellipse cx="22" cy="18" rx="14" ry="7" fill="var(--mud-brick)"/>
+              <circle cx="35" cy="10" r="5" fill="var(--mud-brick)"/>
+              <path d="M35 6 L39 -2 M33 6 L31 -1" stroke="var(--on-surface)" stroke-width="1.8"/>
+              <line x1="12" y1="24" x2="10" y2="35" stroke="var(--mud-brick-dark)" stroke-width="2.5"/>
+              <line x1="29" y1="24" x2="32" y2="35" stroke="var(--mud-brick-dark)" stroke-width="2.5"/>
+            </g>
+            <g transform="translate(485, 154)">
+              <ellipse cx="20" cy="16" rx="12" ry="6" fill="var(--mud-brick)"/>
+              <circle cx="31" cy="9" r="4.5" fill="var(--mud-brick)"/>
+              <line x1="12" y1="21" x2="10" y2="31" stroke="var(--mud-brick-dark)" stroke-width="2.2"/>
+              <line x1="27" y1="21" x2="29" y2="31" stroke="var(--mud-brick-dark)" stroke-width="2.2"/>
+            </g>
+            <!-- Migration dotted trail -->
+            <path d="M295 196 Q390 182 585 198" fill="none" stroke="var(--tertiary)" stroke-width="2.5" stroke-dasharray="6 6"/>
+            <text x="315" y="214" font-family="Geist Mono, monospace" font-size="11" fill="var(--on-surface-variant)">MIGRATION RANGE: 7–500 SQ. MI.</text>
+          </svg>
+        `;
+      } else {
+        container.innerHTML = `
+          <svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Neolithic Fertile Crescent farming village with river, irrigation canals, wheat fields, and mud-brick homes">
+            <rect width="640" height="230" fill="var(--sky-neolithic)"/>
+            <circle cx="550" cy="46" r="26" fill="var(--crop-gold)"/>
+            <!-- Fertile Crescent horizon -->
+            <path d="M0 135 Q180 112 360 128 T640 122 L640 230 L0 230 Z" fill="var(--surface-container-low)"/>
+            <!-- River -->
+            <path d="M0 176 Q160 156 330 178 T640 166 L640 198 Q460 205 320 194 T0 198 Z" fill="var(--water-river)"/>
+            <!-- Irrigation Canals (appear once unlocked or previewed faintly) -->
+            <path d="M190 170 L205 138 L345 138" fill="none" stroke="${hasIrrigation ? 'var(--water-light)' : 'var(--outline-variant)'}" stroke-width="${hasIrrigation ? '7' : '3'}" stroke-dasharray="${hasIrrigation ? 'none' : '4 4'}"/>
+            <path d="M265 138 L265 162" fill="none" stroke="${hasIrrigation ? 'var(--water-light)' : 'var(--outline-variant)'}" stroke-width="${hasIrrigation ? '5' : '2'}" stroke-dasharray="${hasIrrigation ? 'none' : '4 4'}"/>
+            <!-- Wheat & Barley Field -->
+            <rect x="215" y="122" width="135" height="36" rx="4" fill="var(--tertiary-container)"/>
+            <g stroke="var(--tertiary)" stroke-width="2">
+              <line x1="228" y1="154" x2="228" y2="128"/>
+              <line x1="244" y1="154" x2="244" y2="128"/>
+              <line x1="260" y1="154" x2="260" y2="128"/>
+              <line x1="276" y1="154" x2="276" y2="128"/>
+              <line x1="292" y1="154" x2="292" y2="128"/>
+              <line x1="308" y1="154" x2="308" y2="128"/>
+              <line x1="324" y1="154" x2="324" y2="128"/>
+              <line x1="338" y1="154" x2="338" y2="128"/>
+            </g>
+            <!-- Mud-brick Homes -->
+            <g opacity="${hasMudBrick ? '1' : '0.45'}">
+              <rect x="38" y="106" width="66" height="54" rx="3" fill="var(--mud-brick)"/>
+              <rect x="34" y="100" width="74" height="8" rx="2" fill="var(--mud-brick-dark)"/>
+              <rect x="62" y="130" width="18" height="30" rx="2" fill="var(--stone-dark)"/>
+              <rect x="116" y="114" width="58" height="46" rx="3" fill="var(--mud-brick)"/>
+              <rect x="112" y="108" width="66" height="7" rx="2" fill="var(--mud-brick-dark)"/>
+              <rect x="136" y="136" width="16" height="24" rx="2" fill="var(--stone-dark)"/>
+            </g>
+            <!-- Domesticated Sheep Pen -->
+            <g opacity="${hasLivestock ? '1' : '0.45'}" transform="translate(382, 128)">
+              <rect x="0" y="10" width="78" height="26" rx="4" fill="none" stroke="var(--tunic-paleo)" stroke-width="2.5"/>
+              <ellipse cx="24" cy="24" rx="10" ry="7" fill="var(--background)"/>
+              <circle cx="33" cy="21" r="4" fill="var(--stone-dark)"/>
+              <ellipse cx="54" cy="25" rx="10" ry="7" fill="var(--background)"/>
+              <circle cx="63" cy="22" r="4" fill="var(--stone-dark)"/>
+            </g>
+            <!-- Pottery & Specialization Workshop -->
+            <g opacity="${hasJobs ? '1' : '0.4'}" transform="translate(490, 118)">
+              <rect x="0" y="12" width="96" height="36" rx="4" fill="var(--primary-container)"/>
+              <ellipse cx="26" cy="36" rx="10" ry="12" fill="var(--data-3)"/>
+              <rect x="21" y="21" width="10" height="5" rx="1" fill="var(--data-3)"/>
+              <rect x="52" y="24" width="28" height="20" rx="2" fill="var(--tertiary-container)"/>
+              <line x1="58" y1="24" x2="58" y2="44" stroke="var(--primary)" stroke-width="2"/>
+              <line x1="66" y1="24" x2="66" y2="44" stroke="var(--primary)" stroke-width="2"/>
+              <line x1="74" y1="24" x2="74" y2="44" stroke="var(--primary)" stroke-width="2"/>
+            </g>
+            <text x="24" y="216" font-family="Geist Mono, monospace" font-size="11" fill="var(--on-surface-variant)">FERTILE CRESCENT VILLAGE · IRRIGATION · SURPLUS · SPECIALIZATION</text>
+          </svg>
+        `;
+      }
+    }
+
+    function renderScenario() {
+      const sc = SCENARIOS[appState.currentStep] || SCENARIOS[0];
+      const kicker = document.getElementById('scenario-kicker');
+      const timeframe = document.getElementById('scenario-timeframe');
+      const title = document.getElementById('scenario-title');
+      const prompt = document.getElementById('scenario-prompt');
+      const choicesWrap = document.getElementById('choices-container');
+      const feedbackPanel = document.getElementById('feedback-panel');
+      const feedbackHead = document.getElementById('feedback-headline');
+      const feedbackBody = document.getElementById('feedback-body');
+      const feedbackEffects = document.getElementById('feedback-effects');
+      const prevBtn = document.getElementById('prev-step-btn');
+      const nextBtn = document.getElementById('next-step-btn');
+      const nextLabel = document.getElementById('next-step-label');
+
+      if (kicker) kicker.textContent = sc.kicker;
+      if (timeframe) timeframe.textContent = sc.timeframe;
+      if (title) title.textContent = sc.title;
+      if (prompt) prompt.textContent = sc.prompt;
+
+      const selectedId = appState.choicesMade[sc.id];
+
+      if (choicesWrap) {
+        choicesWrap.innerHTML = '';
+        sc.choices.forEach(function (ch) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'choice-btn';
+          if (selectedId === ch.id) {
+            btn.classList.add(sc.era === 'paleolithic' ? 'is-selected-paleo' : 'is-selected');
+          }
+          btn.onclick = function () { selectChoice(sc.id, ch.id); };
+
+          const topRow = document.createElement('span');
+          topRow.className = 'choice-title';
+          const titleText = document.createElement('span');
+          titleText.textContent = ch.title;
+          const tag = document.createElement('span');
+          tag.className = 'choice-tag';
+          tag.textContent = ch.tag;
+          topRow.appendChild(titleText);
+          topRow.appendChild(tag);
+
+          const desc = document.createElement('span');
+          desc.className = 'choice-desc';
+          desc.textContent = ch.desc;
+
+          btn.appendChild(topRow);
+          btn.appendChild(desc);
+          choicesWrap.appendChild(btn);
+        });
+      }
+
+      if (feedbackPanel && feedbackHead && feedbackBody && feedbackEffects) {
+        if (selectedId) {
+          const chosen = sc.choices.find(function (c) { return c.id === selectedId; });
+          if (chosen) {
+            feedbackPanel.hidden = false;
+            feedbackPanel.className = 'feedback-panel ' + (chosen.positive ? 'is-positive' : 'is-caution');
+            feedbackHead.textContent = chosen.feedbackHead;
+            feedbackBody.textContent = chosen.feedbackBody;
+            feedbackEffects.innerHTML = '';
+            chosen.effects.forEach(function (ef) {
+              const chip = document.createElement('span');
+              chip.className = 'effect-chip';
+              chip.textContent = ef;
+              feedbackEffects.appendChild(chip);
+            });
+          }
+        } else {
+          feedbackPanel.hidden = true;
+        }
+      }
+
+      if (prevBtn) {
+        prevBtn.disabled = appState.currentStep === 0;
+      }
+      if (nextBtn && nextLabel) {
+        if (!selectedId) {
+          nextBtn.disabled = true;
+          nextLabel.textContent = 'Make a Choice to Continue';
+        } else if (appState.currentStep < SCENARIOS.length - 1) {
+          nextBtn.disabled = false;
+          nextLabel.textContent = appState.currentStep === 3
+            ? 'Cross 12,000-Year Turning Point → Neolithic Era'
+            : 'Next Stage';
+        } else {
+          nextBtn.disabled = false;
+          nextLabel.textContent = 'Finish & Jump to Reflection';
+        }
+      }
+    }
+
+    function renderMetersAndSidebar(metrics) {
+      const sc = SCENARIOS[appState.currentStep] || SCENARIOS[0];
+      const isPaleo = sc.era === 'paleolithic';
+
+      const statusLabel = document.getElementById('status-card-label');
+      const statusHead = document.getElementById('status-card-heading');
+      const scoreReadout = document.getElementById('score-readout');
+      const foodLabel = document.getElementById('meter-food-label');
+      const foodVal = document.getElementById('meter-food-val');
+      const foodBar = document.getElementById('meter-food-bar');
+      const popVal = document.getElementById('meter-pop-val');
+      const popBar = document.getElementById('meter-pop-bar');
+      const rangeLabel = document.getElementById('meter-range-label');
+      const rangeVal = document.getElementById('meter-range-val');
+      const rangeBar = document.getElementById('meter-range-bar');
+      const surplusLabel = document.getElementById('meter-surplus-label');
+      const surplusVal = document.getElementById('meter-surplus-val');
+      const surplusBar = document.getElementById('meter-surplus-bar');
+
+      if (statusLabel) statusLabel.textContent = isPaleo ? 'Paleolithic Survival Meters' : 'Neolithic Village Meters';
+      if (statusHead) statusHead.textContent = isPaleo ? 'Nomadic Extended-Family Band' : 'Fertile Crescent Farming Village';
+      if (scoreReadout) scoreReadout.textContent = 'Score: ' + metrics.score + ' pts';
+
+      if (foodLabel) foodLabel.textContent = isPaleo ? 'Food Security' : 'Harvest Reliability';
+      if (foodVal) foodVal.textContent = metrics.food + '%';
+      if (foodBar) foodBar.style.width = metrics.food + '%';
+
+      if (popVal) popVal.textContent = metrics.pop + ' people';
+      if (popBar) popBar.style.width = Math.min(100, Math.round((metrics.pop / 300) * 100)) + '%';
+
+      if (rangeLabel) rangeLabel.textContent = isPaleo ? 'Territory Needed' : 'Village Footprint';
+      if (rangeVal) rangeVal.textContent = metrics.range + ' sq mi';
+      if (rangeBar) rangeBar.style.width = Math.min(100, Math.round((metrics.range / 500) * 100)) + '%';
+
+      if (surplusLabel) surplusLabel.textContent = isPaleo ? 'Stored Food' : 'Food Surplus';
+      if (surplusVal) surplusVal.textContent = metrics.surplus + '%';
+      if (surplusBar) surplusBar.style.width = metrics.surplus + '%';
+
+      const unlocksRack = document.getElementById('unlocks-rack');
+      const allAchievements = [
+        { name: 'Stone & Bow Hunting', era: 'paleo' },
+        { name: 'Wild Foraging & Honey', era: 'paleo' },
+        { name: 'Nomadic Migration', era: 'paleo' },
+        { name: 'Cave Shelter & Bone Tools', era: 'paleo' },
+        { name: 'Plant & Animal Domestication', era: 'neo' },
+        { name: 'Irrigation Canals', era: 'neo' },
+        { name: 'Mud-Brick Settlements', era: 'neo' },
+        { name: 'Stored Food Surplus', era: 'neo' },
+        { name: 'Potters, Weavers & Toolmakers', era: 'neo' }
+      ];
+      if (unlocksRack) {
+        unlocksRack.innerHTML = '';
+        allAchievements.forEach(function (ach) {
+          const unlocked = metrics.unlocks.indexOf(ach.name) !== -1;
+          const badge = document.createElement('span');
+          badge.className = 'unlock-badge';
+          if (unlocked) {
+            badge.classList.add(ach.era === 'paleo' ? 'is-active-ochre' : 'is-active');
+          }
+          badge.textContent = (unlocked ? '✓ ' : '○ ') + ach.name;
+          unlocksRack.appendChild(badge);
+        });
+      }
+
+      const logList = document.getElementById('field-log-list');
+      const logCount = document.getElementById('log-count-label');
+      if (logCount) logCount.textContent = metrics.logs.length + ' ' + (metrics.logs.length === 1 ? 'entry' : 'entries');
+      if (logList) {
+        if (metrics.logs.length === 0) {
+          logList.innerHTML = '<div class="log-entry"><strong>Expedition Ready</strong><span>Choose a survival strategy in Stage 1 to record your first entry.</span></div>';
+        } else {
+          logList.innerHTML = '';
+          metrics.logs.slice().reverse().forEach(function (entry) {
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            const titleEl = document.createElement('strong');
+            titleEl.textContent = 'Stage ' + entry.step + ': ' + entry.title;
+            const bodyEl = document.createElement('span');
+            bodyEl.textContent = entry.choiceTitle;
+            div.appendChild(titleEl);
+            div.appendChild(bodyEl);
+            logList.appendChild(div);
+          });
+        }
+      }
+    }
+
+    function renderComparisonChart(metrics) {
+      const canvas = document.getElementById('eraComparisonChart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const styles = getComputedStyle(document.documentElement);
+      const ochreColor = styles.getPropertyValue('--data-2').trim();
+      const greenColor = styles.getPropertyValue('--data-1').trim();
+      const inkColor = styles.getPropertyValue('--on-surface').trim();
+      const gridColor = styles.getPropertyValue('--outline-variant').trim();
+
+      const paleoMetrics = computeMetrics(3);
+      const paleoPop = Math.min(100, paleoMetrics.pop || 40);
+      const neoPop = Math.max(120, metrics.pop);
+      const paleoRange = Math.max(250, paleoMetrics.range);
+      const neoRange = appState.currentStep >= 4 ? metrics.range : 12;
+
+      const labels = ['Community Population', 'Land Needed (sq. mi.)', 'Food Surplus (%)'];
+      const paleoData = [paleoPop, paleoRange, paleoMetrics.surplus];
+      const neoData = [neoPop, neoRange, Math.max(15, metrics.surplus)];
+
+      if (comparisonChartInstance) {
+        comparisonChartInstance.data.datasets[0].data = paleoData;
+        comparisonChartInstance.data.datasets[1].data = neoData;
+        comparisonChartInstance.update();
+        return;
+      }
+
+      comparisonChartInstance = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Paleolithic (Nomadic)',
+              data: paleoData,
+              backgroundColor: ochreColor,
+              borderRadius: 6
+            },
+            {
+              label: 'Neolithic (Settled)',
+              data: neoData,
+              backgroundColor: greenColor,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: inkColor }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: inkColor },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: inkColor },
+              grid: { color: gridColor }
+            }
+          }
+        }
+      });
+    }
+
+    function renderClassifier() {
+      const list = document.getElementById('classifier-list');
+      const pill = document.getElementById('classifier-score-pill');
+      if (!list) return;
+
+      let correctCount = 0;
+      list.innerHTML = '';
+
+      CLASSIFIER_ITEMS.forEach(function (item) {
+        const picked = appState.classifierAnswers[item.id];
+        if (picked === item.answer) correctCount++;
+
+        const card = document.createElement('div');
+        card.className = 'classifier-item';
+
+        const q = document.createElement('strong');
+        q.textContent = item.scenario;
+        card.appendChild(q);
+
+        const actions = document.createElement('div');
+        actions.className = 'classifier-actions';
+
+        ['ADAPTING', 'MODIFYING'].forEach(function (opt) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'toggle-pill';
+          btn.textContent = opt;
+          if (picked === opt) {
+            btn.classList.add(picked === item.answer ? 'is-correct' : 'is-wrong');
+          }
+          btn.onclick = function () { selectClassifier(item.id, opt); };
+          actions.appendChild(btn);
+        });
+        card.appendChild(actions);
+
+        if (picked) {
+          const fb = document.createElement('div');
+          fb.className = 'classifier-feedback';
+          fb.textContent = picked === item.answer
+            ? item.explain
+            : 'Not quite — ask: did humans change their own habits (Adapting) or physically change the Earth/water (Modifying)? Try the other button!';
+          card.appendChild(fb);
+        }
+
+        list.appendChild(card);
+      });
+
+      if (pill) {
+        pill.textContent = correctCount + ' / ' + CLASSIFIER_ITEMS.length + ' Classified';
+      }
+    }
+
+    function renderReflectionSection() {
+      const textarea = document.getElementById('reflection-input');
+      const bank = document.getElementById('vocab-bank');
+      const status = document.getElementById('reflection-status');
+      const scaffoldBox = document.getElementById('scaffold-box');
+      const scaffoldBtnText = document.getElementById('scaffold-btn-text');
+
+      if (textarea && textarea.value !== appState.reflectionText) {
+        textarea.value = appState.reflectionText || '';
+      }
+      if (scaffoldBox) scaffoldBox.hidden = !appState.showScaffold;
+      if (scaffoldBtnText) {
+        scaffoldBtnText.textContent = appState.showScaffold ? 'Hide Sentence Starters' : 'Show Sentence Starters';
+      }
+
+      const lower = (appState.reflectionText || '').toLowerCase();
+      let usedCount = 0;
+
+      if (bank) {
+        bank.innerHTML = '';
+        VOCAB_TERMS.forEach(function (term) {
+          const candidates = [term.key].concat(term.aliases || []);
+          const used = candidates.some(function (word) {
+            return lower.indexOf(word) !== -1;
+          });
+          if (used) usedCount++;
+
+          const chip = document.createElement('span');
+          chip.className = 'vocab-chip' + (used ? ' is-used' : '');
+          chip.textContent = (used ? '✓ ' : '○ ') + term.label;
+          bank.appendChild(chip);
+        });
+      }
+
+      if (status) {
+        status.textContent = usedCount + ' of ' + VOCAB_TERMS.length + ' vocabulary terms used';
+      }
+    }
+
+    function renderAll() {
+      const sc = SCENARIOS[appState.currentStep] || SCENARIOS[0];
+      const metrics = computeMetrics(appState.currentStep);
+
+      renderTimelineStrip();
+      renderDiorama(sc, metrics);
+      renderScenario();
+      renderMetersAndSidebar(metrics);
+      renderComparisonChart(metrics);
+      renderClassifier();
+      renderReflectionSection();
+
+      const matrixRows = document.querySelectorAll('#comparative-matrix tbody tr');
+      matrixRows.forEach(function (row) {
+        if (appState.highlightMatrix) {
+          row.classList.add('is-highlighted');
+        } else {
+          row.classList.remove('is-highlighted');
+        }
+      });
+      const matrixBtnLabel = document.getElementById('matrix-toggle-label');
+      if (matrixBtnLabel) {
+        matrixBtnLabel.textContent = appState.highlightMatrix ? 'Reset Matrix View' : 'Highlight Key Changes';
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    function selectChoice(scenarioId, choiceId) {
+      appState.choicesMade[scenarioId] = choiceId;
+      saveProgress();
+      renderAll();
+    }
+
+    function jumpToStep(stepIndex) {
+      if (stepIndex < 0 || stepIndex >= SCENARIOS.length) return;
+      appState.currentStep = stepIndex;
+      saveProgress();
+      renderAll();
+    }
+
+    function goToPreviousStep() {
+      if (appState.currentStep > 0) {
+        appState.currentStep -= 1;
+        saveProgress();
+        renderAll();
+      }
+    }
+
+    function goToNextStep() {
+      if (appState.currentStep < SCENARIOS.length - 1) {
+        appState.currentStep += 1;
+        saveProgress();
+        renderAll();
+      } else {
+        scrollToSection('reflection-section');
+      }
+    }
+
+    function selectClassifier(itemId, value) {
+      appState.classifierAnswers[itemId] = value;
+      saveProgress();
+      renderClassifier();
+    }
+
+    function handleReflectionInput(val) {
+      appState.reflectionText = val;
+      saveProgress();
+      renderReflectionSection();
+    }
+
+    function toggleScaffoldHelp() {
+      appState.showScaffold = !appState.showScaffold;
+      saveProgress();
+      renderReflectionSection();
+    }
+
+    function toggleMatrixFocus() {
+      appState.highlightMatrix = !appState.highlightMatrix;
+      saveProgress();
+      renderAll();
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function handleResetSimulation(btn) {
+      if (!btn) return;
+      if (btn.dataset.armed !== 'true') {
+        btn.dataset.armed = 'true';
+        const span = btn.querySelector('span');
+        if (span) span.textContent = 'Click again to confirm reset';
+        setTimeout(function () {
+          if (btn.dataset.armed === 'true') {
+            btn.dataset.armed = 'false';
+            const s = btn.querySelector('span');
+            if (s) s.textContent = 'Reset Simulation';
+          }
+        }, 4000);
+        return;
+      }
+      btn.dataset.armed = 'false';
+      const span = btn.querySelector('span');
+      if (span) span.textContent = 'Reset Simulation';
+
+      appState = {
+        currentStep: 0,
+        choicesMade: {},
+        classifierAnswers: {},
+        reflectionText: '',
+        showScaffold: false,
+        highlightMatrix: false
+      };
+      saveProgress();
+      renderAll();
+    }
+
+    function downloadStudySummary() {
+      const msgEl = document.getElementById('download-status-msg');
+      const metrics = computeMetrics(SCENARIOS.length - 1);
+      const lines = [
+        'SURVIVAL TO SETTLEMENT: PALEOLITHIC VS. NEOLITHIC SUMMARY',
+        '==========================================================',
+        'Simulation Score: ' + metrics.score + ' pts',
+        'Unlocked Milestones: ' + (metrics.unlocks.length ? metrics.unlocks.join(', ') : 'None yet'),
+        '',
+        'KEY COMPARISON:',
+        '- Paleolithic Era: Nomadic bands (<100 people), 7-500 sq. mi. range, ADAPTING to natural caves & seasons.',
+        '- Neolithic Era: Fertile Crescent (~12,000 yrs ago), domestication, irrigation canals (MODIFYING), mud-brick settlements, food surplus, specialized jobs (potters, weavers, toolmakers).',
+        '',
+        'MY REFLECTION:',
+        appState.reflectionText ? appState.reflectionText : '(No reflection written yet.)'
+      ];
+      const textContent = lines.join('\n');
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.triggerFileDownload === 'function') {
+        window.notebookAppApi.triggerFileDownload({
+          content: textContent,
+          contentType: 'text/plain',
+          encoding: 'UTF-8',
+          filename: 'paleolithic-vs-neolithic-summary.txt'
+        });
+        if (msgEl) msgEl.textContent = 'Summary downloaded as paleolithic-vs-neolithic-summary.txt';
+      } else {
+        if (msgEl) msgEl.textContent = 'Summary ready! Copy your reflection above to save it.';
+      }
+    }
+
+    async function initApp() {
+      try {
+        if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved && typeof saved === 'object') {
+            appState = Object.assign(appState, saved);
+          }
+        }
+      } catch (err) {
+        /* Proceed cleanly with default state */
+      }
+
+      renderAll();
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
